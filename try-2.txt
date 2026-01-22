@@ -1,0 +1,40 @@
+## 디버깅 과정 요약
+
+1.  **초기 상태**:
+    *   `rag_pipeline.py` 스크립트와 `requirements.txt` 파일이 있는 파이썬 프로젝트.
+    *   사용자가 파이썬 버전을 3.11로 다운그레이드한 직후.
+
+2.  **첫 번째 시도**:
+    *   `pip install -r requirements.txt` 명령어로 의존성 설치 시도.
+    *   사용자가 가상 환경(`venv`) 내에서 라이브러리를 관리해야 한다고 지적하며 중단.
+
+3.  **두 번째 시도**:
+    *   `.venv\Scripts\pip.exe install -r requirements.txt` 명령어로 가상 환경에 의존성 설치.
+
+4.  **첫 번째 오류 발생**:
+    *   `rag_pipeline.py` 실행 시 `PydanticImportError` 및 `ImportError` 발생.
+    *   **원인**: `chromadb`와 `pydantic` v2 간의 호환성 문제. `pydantic` v2에서 `BaseSettings`가 `pydantic-settings` 패키지로 이동했기 때문.
+
+5.  **해결 시도 1 (pydantic 다운그레이드)**:
+    *   `pydantic`을 이전 버전인 `1.10.26`으로 다운그레이드.
+    *   **결과**: `ImportError: cannot import name 'model_validator' from 'pydantic'` 오류 발생. `langchain-core`가 `pydantic` v2의 `model_validator` 기능을 요구했기 때문.
+
+6.  **해결 시도 2 (langchain 다운그레이드)**:
+    *   `langchain`, `langchain-core`, `langchain-community`를 `pydantic` v1과 호환되는 이전 버전으로 다운그레이드 시도.
+    *   **결과**: `langchain` 패키지들 간의 자체적인 의존성 충돌로 실패.
+
+7.  **해결 시도 3 (최신 버전으로 업그레이드 및 코드 수정)**:
+    *   모든 패키지를 최신 버전으로 업그레이드.
+    *   `chromadb`의 `config.py` 파일을 수정하여 `pydantic` v2와 호환되도록 `BaseSettings`의 import 경로를 `pydantic_settings`로 변경.
+    *   **결과**: `ValidationError` 발생. `pydantic` v2의 엄격해진 유효성 검사 규칙 때문에 `chromadb`의 설정값이 유효하지 않게 됨.
+
+8.  **해결 시도 4 (chromadb 설정 추가 수정)**:
+    *   `chromadb/config.py` 파일을 다시 수정하여 `pydantic` v2의 유효성 검사를 통과하도록 설정 변경. (`Optional` 타입 힌트 추가, `extra = "ignore"` 설정)
+    *   **결과**: `ssl.SSLCertVerificationError` 발생. Hugging Face에서 `sentence-transformers` 모델을 다운로드하는 과정에서 SSL 인증서 검증 실패.
+
+9.  **해결 시도 5 (SSL 검증 비활성화)**:
+    *   `HF_HUB_DISABLE_CERT_CHECKS=1` 환경 변수를 설정하여 SSL 검증 비활성화 시도.
+    *   **결과**: 여전히 동일한 `SSLCertVerificationError` 발생.
+
+10. **현재 상태**:
+    *   사용자가 `HF_HUB_DISABLE_CERT_CHECKS=1`와 `REQUESTS_CA_BUNDLE=""` 환경 변수를 모두 설정하여 SSL 검증을 비활성화하려는 시도를 중단하고, 지금까지의 과정을 요약하여 `try-2.txt` 파일에 정리하도록 요청함.
