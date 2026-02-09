@@ -87,3 +87,44 @@ kubectl get svc
 
 # 접속: http://<Elastic IP>:30080
 ```
+
+## 5. Argo CD 설치
+
+```bash
+# Argo CD 네임스페이스 생성 및 설치
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Pod 전부 Running 될 때까지 대기 (1~2분)
+kubectl get pods -n argocd -w
+
+# Argo CD 웹 UI를 외부에서 접속할 수 있도록 NodePort로 변경
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort", "ports": [{"port": 443, "targetPort": 8080, "nodePort": 30443}]}}'
+
+# 초기 admin 비밀번호 확인
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+
+# 접속: https://<Elastic IP>:30443
+# ID: admin / PW: 위 명령어 출력값
+```
+
+## 6. Argo CD - GitHub 연동
+
+### 웹 UI에서 진행
+
+1. **Repository 연결**
+   - Settings → Repositories → Connect Repo
+   - Method: VIA HTTPS
+   - Repository URL: https://github.com/<본인계정>/firstRagProject.git
+   - (public 리포면 인증 불필요)
+
+2. **Application 생성**
+   - Applications → New App
+   - Application Name: rag-app
+   - Project: default
+   - Sync Policy: Automatic
+   - Repository URL: 위에서 연결한 리포
+   - Path: k8s
+   - Cluster URL: https://kubernetes.default.svc
+   - Namespace: default
+   - Create 클릭

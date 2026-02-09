@@ -7,7 +7,7 @@
 ## 1-2주차: 환경 구축 및 Hello RAG
 
 - [x] Windows 개발 환경 세팅 (Python 3.11.8, venv)
-- [ ] 원격 리눅스 서버에 K3s 설치 및 로컬 윈도우와 연결 (kubeconfig)
+- [x] 원격 리눅스 서버에 K3s 설치 및 로컬 윈도우와 연결 (kubeconfig)
 - [x] FastAPI를 활용한 기본 RAG API (LangChain 연동) 개발
 
 ### 진행 내역
@@ -25,9 +25,21 @@
 
 ## 3-4주차: 도커라이징 및 Argo CD 배포
 
-- [ ] 애플리케이션 Docker 이미지 빌드 및 Docker Hub 푸시
-- [ ] 원격 서버에 Argo CD 설치 및 GitHub 리포지토리 연동
-- [ ] YAML 매니페스트 작성을 통한 첫 번째 K8s 배포 성공
+- [x] 애플리케이션 Docker 이미지 빌드
+- [x] 원격 서버에 Argo CD 설치 및 GitHub 리포지토리 연동
+- [x] YAML 매니페스트 작성을 통한 첫 번째 K8s 배포 성공
+
+### 진행 내역
+- AWS EC2에 Docker 설치 및 rag-app 이미지 빌드
+- K3s 설치, kubectl 권한 설정
+- K8s Deployment + Service (NodePort 30080) 매니페스트 작성
+- Docker 이미지를 K3s containerd로 import
+- API 키를 K8s Secret으로 관리
+- Argo CD 설치 (NodePort 30443)
+- Argo CD ↔ GitHub 리포 연동, Automatic Sync 설정
+- 외부에서 http://<IP>:30080 접속 확인
+
+---
 
 ## 5-6주차: 데이터 저장소 및 스테이트풀셋 (StatefulSet)
 
