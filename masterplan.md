@@ -6,9 +6,22 @@
 
 ## 1-2주차: 환경 구축 및 Hello RAG
 
-- [ ] Windows 개발 환경 세팅 (Poetry, Python)
+- [x] Windows 개발 환경 세팅 (Python 3.11.8, venv)
 - [ ] 원격 리눅스 서버에 K3s 설치 및 로컬 윈도우와 연결 (kubeconfig)
-- [ ] FastAPI를 활용한 기본 RAG API (LangChain 연동) 개발
+- [x] FastAPI를 활용한 기본 RAG API (LangChain 연동) 개발
+
+### 진행 내역
+- Python 3.14 → 3.11.8로 venv 재생성 (라이브러리 호환성 문제 해결)
+- chromadb 0.3.23 → 1.4.1 업그레이드 (pydantic v2 충돌 해소)
+- deprecated 모델 교체: embedding-001 → gemini-embedding-001, gemini-pro → gemini-2.0-flash
+- Chroma import를 langchain_community → langchain_chroma로 변경
+- vectordb.persist() 제거 (최신 ChromaDB 자동 저장)
+- .gitignore 추가 및 .env, chroma_db Git 추적 해제
+- 유출된 API 키 폐기 후 유료 프로젝트 키로 교체
+- FastAPI 서버(main.py) + 챗봇 UI(static/index.html) 구축
+- AWS EC2 서버 생성 완료 (Elastic IP 할당)
+
+---
 
 ## 3-4주차: 도커라이징 및 Argo CD 배포
 
