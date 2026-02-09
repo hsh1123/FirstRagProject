@@ -1,7 +1,10 @@
 langchain
 langchain-google-genai
 langchain-community
+langchain-chroma
 chromadb
 pypdf
 tiktoken
 python-dotenv
+fastapi
+uvicorn

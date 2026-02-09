@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_classic.chains.retrieval import create_retrieval_chain
@@ -37,13 +37,12 @@ def main():
     print("Documents split into chunks.")
 
     # Create embeddings model
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", google_api_key=api_key)
     print("Embedding model created.")
 
     # Store documents in Chroma vector DB
     # By specifying persist_directory, vector data can be saved to disk and reloaded later.
     vectordb = Chroma.from_documents(documents=texts, embedding=embeddings, persist_directory="./chroma_db")
-    vectordb.persist()
     print("Stored in vector database.")
     print("--- Indexing Complete ---")
     print()
@@ -55,7 +54,7 @@ def main():
     vectordb = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
 
     # Create LLM model
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=api_key, temperature=0, convert_system_message_to_human=True)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key=api_key, temperature=0)
 
     # Create a prompt
     prompt = ChatPromptTemplate.from_template("""Please answer the following question using the given context:
