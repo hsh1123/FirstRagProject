@@ -1,0 +1,15 @@
+# Environment
+.env
+.venv/
+
+# Vector DB
+chroma_db/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
