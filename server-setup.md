@@ -41,6 +41,49 @@ echo 'GOOGLE_API_KEY=여기에_실제_키' > .env
 # Docker 이미지 빌드
 docker build -t rag-app .
 
+#정상 빌드 되었는지 확인
+docker images
+
 # 컨테이너 실행
 docker run --env-file .env -p 8000:8000 rag-app
+```
+
+## 3. K3s 설치 (경량 쿠버네티스)
+
+```bash
+# 실행 중인 Docker 컨테이너 정지
+docker ps
+docker stop $(docker ps -q)
+
+# K3s 설치
+curl -sfL https://get.k3s.io | sh -
+
+# 설치 확인 (Ready 상태인지 확인)
+sudo kubectl get nodes
+
+# 일반 유저도 kubectl 사용할 수 있도록 권한 설정
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> ~/.bashrc
+```
+
+## 4. K8s 매니페스트 배포
+
+```bash
+# Docker 이미지를 K3s 컨테이너 런타임에 import
+sudo docker save rag-app:latest | sudo k3s ctr images import -
+
+# API 키를 K8s Secret으로 생성
+kubectl create secret generic rag-secret \
+  --from-literal=GOOGLE_API_KEY='여기에_실제_키'
+
+# 매니페스트 적용 (GitHub push → git pull 후)
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+
+# 배포 상태 확인
+kubectl get pods
+kubectl get svc
+
+# 접속: http://<Elastic IP>:30080
 ```
