@@ -153,3 +153,27 @@ kubectl rollout restart deployment rag-app
 kubectl get pods
 kubectl get svc
 ```
+
+## 8. Prometheus + Grafana 모니터링 설치
+
+```bash
+# Helm 설치
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# 모니터링 네임스페이스 생성
+kubectl create namespace monitoring
+
+# Prometheus + Grafana 스택 설치
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring
+
+# Pod 전부 Running 될 때까지 대기
+kubectl get pods -n monitoring -w
+
+# Grafana 웹 UI를 외부에서 접속할 수 있도록 NodePort로 변경
+kubectl patch svc monitoring-grafana -n monitoring -p '{"spec": {"type": "NodePort", "ports": [{"port": 80, "targetPort": 3000, "nodePort": 30300}]}}'
+
+# 접속: http://<Elastic IP>:30300
+# ID: admin / PW: prom-operator
+```

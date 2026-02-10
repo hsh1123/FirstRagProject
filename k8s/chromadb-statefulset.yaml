@@ -18,6 +18,13 @@ spec:
           image: chromadb/chroma:latest
           ports:
             - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           volumeMounts:
             - name: chromadb-data
               mountPath: /chroma/chroma
