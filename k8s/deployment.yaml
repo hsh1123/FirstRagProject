@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: rag-app
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: rag-app
@@ -18,6 +18,11 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
+          env:
+            - name: CHROMA_HOST
+              value: "chromadb"
+            - name: CHROMA_PORT
+              value: "8000"
           envFrom:
             - secretRef:
                 name: rag-secret

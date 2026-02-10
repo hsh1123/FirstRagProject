@@ -128,3 +128,28 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
    - Cluster URL: https://kubernetes.default.svc
    - Namespace: default
    - Create 클릭
+
+## 7. ChromaDB 분리 배포 (StatefulSet + PVC)
+
+```bash
+# GitHub push 후 서버에서 pull
+cd firstRagProject && git pull
+
+# Docker 이미지 재빌드 (main.py 변경됨)
+docker build -t rag-app .
+sudo docker save rag-app:latest | sudo k3s ctr images import -
+
+# ChromaDB 배포
+kubectl apply -f k8s/chromadb-statefulset.yaml
+kubectl apply -f k8s/chromadb-service.yaml
+
+# ChromaDB Pod Running 확인
+kubectl get pods -w
+
+# RAG 앱 재배포
+kubectl rollout restart deployment rag-app
+
+# 전체 확인
+kubectl get pods
+kubectl get svc
+```

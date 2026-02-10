@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import chromadb
 from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_classic.chains.retrieval import create_retrieval_chain
@@ -29,6 +30,15 @@ async def lifespan(app: FastAPI):
     if not api_key:
         raise RuntimeError("GOOGLE_API_KEY is not set in .env file.")
 
+    # ChromaDB connection
+    chroma_host = os.getenv("CHROMA_HOST", "localhost")
+    chroma_port = int(os.getenv("CHROMA_PORT", "8000"))
+    chroma_client = chromadb.HttpClient(host=chroma_host, port=chroma_port)
+
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-001", google_api_key=api_key
+    )
+
     # Indexing
     print("--- Indexing ---")
     loader = TextLoader("dummy_document.txt", encoding="utf-8")
@@ -37,16 +47,16 @@ async def lifespan(app: FastAPI):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     texts = text_splitter.split_documents(documents)
 
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/gemini-embedding-001", google_api_key=api_key
-    )
-
     Chroma.from_documents(
-        documents=texts, embedding=embeddings, persist_directory="./chroma_db"
+        documents=texts, embedding=embeddings, client=chroma_client,
+        collection_name="rag_collection"
     )
 
     # Retrieval chain setup
-    vectordb = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+    vectordb = Chroma(
+        client=chroma_client, embedding_function=embeddings,
+        collection_name="rag_collection"
+    )
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.0-flash", google_api_key=api_key, temperature=0
     )
